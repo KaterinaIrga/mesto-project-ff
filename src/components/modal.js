@@ -10,17 +10,11 @@ export function openModal (elem) {
   return elem ; 
 }
 
-
-
-
-export function closeModal(popup){
-  
+export function closeModal(popup){  
   popup.classList.remove('popup_is-animated'); 
   popup.classList.remove('popup_is-opened'); 
 
   popup.removeEventListener('click', closeModalOverlay);
-  popup.closest('.page').removeEventListener('keydown', closeModalEscape); 
-  
-  console.log( popup.classList + ' is closed')
+  popup.closest('.page').removeEventListener('keydown', closeModalEscape);   
 }
 

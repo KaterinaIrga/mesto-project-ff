@@ -38,10 +38,7 @@ function openModalProfile() {
 
 function openModalNewCard() {
   const elem = openModal(document.querySelector('.popup_type_new-card'));
-  /* const inputPlaceName = elem.querySelector('.popup__input_type_card-name');
-  const inputLink = elem.querySelector('.popup__input_type_url'); */
-  console.log(elem.querySelector('.popup__form'))
-  elem.querySelector('.popup__form').addEventListener('submit',  (e) => { console.log(e.target)
+  elem.querySelector('.popup__form').addEventListener('submit',  (e) => { 
     saveData(e)} );
 }
 
@@ -53,14 +50,12 @@ function openModalImage(e) {
     elem.querySelector('.popup__image').src = cardElem.querySelector('.card__image').getAttribute('src');
     elem.querySelector('.popup__caption').textContent = cardElem.querySelector('.card__title').textContent;
     e.stopPropagation();
-  }
-  
+  }  
 }
 
 //ToDo: написать функцию, достающую все поля и элементы управления из формы
 
 function saveData(e) {
-  console.log('kkk')
   //ToDo: здесь переделать на использование document.forms.[e.target]
   const formElem = e.target;
   if (e.type === 'submit') {
@@ -79,11 +74,8 @@ function saveData(e) {
         break;
       }
     }   
-  //  closeModal(formElem.closest('.popup_is-opened'));
    
-    formElem.reset();
-    console.log('save')
-    debugger
+   formElem.reset();
    e.preventDefault();
    e.stopPropagation() ;
   }
@@ -94,22 +86,15 @@ export function closeModalEscape(e) {
   if(e.key === 'Escape'){
     closeModal(document.querySelector('.popup_is-opened'));}
   e.preventDefault();
- // e.stopPropagation() ;
 }
 
 export function closeModalOverlay(e){
-  console.log(e.target.classList + ' close overlay')
   if (e.type === 'submit' ||
      (e.target.classList.contains('popup') || e.target.classList.contains('popup__close'))) {
-
-    closeModal(e.currentTarget);
-    
+    closeModal(e.currentTarget);    
   }
-  //e.preventDefault();
   e.stopPropagation() ;
 }
-   
-//page.addEventListener('click', clickHendler);
 
 profileButton.addEventListener('click', openModalProfile);
 cardAddButton.addEventListener('click', openModalNewCard);
