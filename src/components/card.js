@@ -1,4 +1,4 @@
-export function createCard(cardData, delCard, likeCard, cardTemplate) {
+export function createCard(cardData, delCard, likeCard, cardTemplate, imageClick) {
 
   const newCard = cardTemplate.querySelector('.card').cloneNode(true);
   const deleteButton = newCard.querySelector('.card__delete-button');  
@@ -8,6 +8,7 @@ export function createCard(cardData, delCard, likeCard, cardTemplate) {
   newCard.querySelector('.card__image').src = imageLink;   
   newCard.querySelector('.card__image').alt = cardData.name; 
   newCard.querySelector('.card__title').textContent = cardData.name;
+  newCard.addEventListener('click', imageClick);
   deleteButton.addEventListener('click', 
                                 () => delCard(deleteButton)
                                ) 
@@ -23,5 +24,5 @@ export function deleteCard (btn) {
 }
 
 export function likeCard(elem) {
-  return elem.classList.add('card__like-button_is-active'); 
+ elem.classList.toggle('card__like-button_is-active'); 
 }
