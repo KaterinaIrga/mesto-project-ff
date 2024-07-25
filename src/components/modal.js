@@ -3,10 +3,8 @@ export function openModal (elem) {
   elem.classList.toggle('popup_is-animated', true);
   elem.addEventListener('click', closeModalOverlay);
   document.addEventListener('keydown', closeModalEscape); 
-  
-
   return elem ; 
-}
+}  
 
 export function closeModal(popup){  
   popup.classList.remove('popup_is-animated'); 
@@ -21,7 +19,6 @@ export function closeModalEscape(e) {
     closeModal(document.querySelector('.popup_is-opened'));
     e.preventDefault();
   }
-  //e.preventDefault();
 }
 
 export function closeModalOverlay(e){

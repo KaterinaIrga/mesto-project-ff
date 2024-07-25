@@ -66,10 +66,6 @@ export function getCardData(idCard) {
   .then(result => {return result})
   .catch(err => console.log(err))
 }
-//ToDo: нахера, когда при создании карточки количество лайков я уже получила
-export function getLikeData(idCard) {
-  return fetch('', {})
-}
 
 export function saveNewCardData(CardData) {
   return fetch('https://nomoreparties.co/v1/pwff-cohort-1/cards ', {

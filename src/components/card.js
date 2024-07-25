@@ -1,15 +1,13 @@
-import {getUserInfo, switchLikesForCard, dropCard, getCardData} from './api.js';
+import {getUserInfo, switchLikesForCard, dropCard} from './api.js';
 //ToDo: получить данные пользователя единоразово и юзать там, где нужно.
 
 export function createCard(cardData, delCard, likeCard, cardTemplate, imageClick) {
-
   const newCard = cardTemplate.querySelector('.card').cloneNode(true);
   const deleteButton = newCard.querySelector('.card__delete-button');  
   const likeButton =   newCard.querySelector('.card__like-button'); 
-  const likeCount = newCard.querySelector('.card__like-counter');
   const imageLink = new URL(cardData.link, import.meta.url);
 
-   getUserInfo()
+  getUserInfo()
     .then(result => {const currentUser = result._id;
       if (currentUser === cardData.owner._id) {
         deleteButton.classList.add('card__delete-button_active');
@@ -29,14 +27,8 @@ export function createCard(cardData, delCard, likeCard, cardTemplate, imageClick
   newCard.querySelector('.card__image').alt = cardData.name; 
   newCard.querySelector('.card__title').textContent = cardData.name; 
   newCard.addEventListener('click', imageClick);
-  newCard.setAttribute('id', cardData._id); 
-
-  //ToDo: здесь что-то падает, кажется, при добавлении карточки
-  //likeCount.textContent = cardData.likes.length; 
-  
-  likeButton.addEventListener('click', 
-                              () => likeCard(likeButton)
-                            )
+  newCard.setAttribute('id', cardData._id);  
+  likeButton.addEventListener('click', () => likeCard(likeButton));
   return newCard;
 }
 
@@ -48,7 +40,7 @@ export function deleteCard (btn) {
 
 function hasMyLike(likeArray, idUser) {
   return Array.from(likeArray).some((item) => {
-     return item._id === idUser})
+     return item._id === idUser});
 }
 
 export function likeCard(elem) {
@@ -62,7 +54,7 @@ export function likeCard(elem) {
       likeCount.textContent = res.likes.length;
     })
     .catch((err) => {console.log('Что-то пошло не так при лайке.');
-      console.log(err)
+      console.log(err);
     })
     .finally(() => {return likeCount.textContent;})
   
