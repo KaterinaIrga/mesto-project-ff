@@ -1,0 +1,20 @@
+.profile__image-edit {
+  width: 120px;
+  height: 120px;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  margin: 0 29px 0 0;
+  position: absolute;
+  left: 0;
+  top: 36px;
+  /* background-image:url('../../../images/edit-icon.svg')
+  ; */
+  background-repeat: no-repeat;
+  background-position: center;
+  /* background-size: 26px; */
+  background-size: 26px, cover;
+  /* ,
+  linear-gradient(rgba(0,0,0, 0.5), rgba(0,0,0, 0.5)),
+  url('../../../images/avatar.jpg') */
+}
