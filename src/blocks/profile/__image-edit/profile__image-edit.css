@@ -8,13 +8,17 @@
   position: absolute;
   left: 0;
   top: 36px;
-  /* background-image:url('../../../images/edit-icon.svg')
-  ; */
   background-repeat: no-repeat;
   background-position: center;
-  /* background-size: 26px; */
   background-size: 26px, cover;
-  /* ,
-  linear-gradient(rgba(0,0,0, 0.5), rgba(0,0,0, 0.5)),
-  url('../../../images/avatar.jpg') */
+}
+
+@media screen and (max-width: 480px) {
+  .profile__image-edit {
+    margin-left: auto;
+    margin-right: auto;
+    margin-block-start: 7px;
+    left: 0;
+    right: 0;
+  }
 }

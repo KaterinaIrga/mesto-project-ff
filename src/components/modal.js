@@ -1,7 +1,7 @@
 export function openModal (elem) {
   elem.classList.toggle('popup_is-opened', true);
   elem.classList.toggle('popup_is-animated', true);
-  elem.addEventListener('click', closeModalOverlay);
+  elem.addEventListener('click', closeModalOverlay); 
   document.addEventListener('keydown', closeModalEscape); 
   return elem ; 
 }  

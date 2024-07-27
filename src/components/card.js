@@ -1,31 +1,26 @@
 import {getUserInfo, switchLikesForCard, dropCard} from './api.js';
 //ToDo: получить данные пользователя единоразово и юзать там, где нужно.
 
-export function createCard(cardData, delCard, likeCard, cardTemplate, imageClick) {
+export function createCard(cardData, delCard, likeCard, cardTemplate, imageClick, idUser) {
   const newCard = cardTemplate.querySelector('.card').cloneNode(true);
   const deleteButton = newCard.querySelector('.card__delete-button');  
   const likeButton =   newCard.querySelector('.card__like-button'); 
   const imageLink = new URL(cardData.link, import.meta.url);
+  const currentUser = idUser;
 
-  getUserInfo()
-    .then(result => {const currentUser = result._id;
-      if (currentUser === cardData.owner._id) {
-        deleteButton.classList.add('card__delete-button_active');
-        deleteButton.addEventListener('click', 
-          (e) => {e.stopPropagation() ;
-            if(e.target.classList.contains('card__delete-button')) {delCard(deleteButton)}}
-         ) 
-      };
-      return currentUser;
-    })
-      .then((currentUser) => {  
-         hasMyLike(cardData.likes, currentUser) ? 
-          likeButton.classList.add('card__like-button_is-active') : null;}) 
-    .catch(err => console.log('Произошла ошибка при получении idUser для карточки')); 
+  if (currentUser === cardData.owner._id) {
+    deleteButton.classList.add('card__delete-button_active');
+    deleteButton.addEventListener('click', 
+      (e) => {e.stopPropagation() ;
+        if(e.target.classList.contains('card__delete-button')) {delCard(deleteButton)}}
+     ) 
+  };
 
   newCard.querySelector('.card__image').src = imageLink;   
   newCard.querySelector('.card__image').alt = cardData.name; 
   newCard.querySelector('.card__title').textContent = cardData.name; 
+  newCard.querySelector('.card__like-counter').textContent = cardData.likes.length;   
+  hasMyLike(cardData.likes, currentUser) ? likeButton.classList.add('card__like-button_is-active') : null;
   newCard.addEventListener('click', imageClick);
   newCard.setAttribute('id', cardData._id);  
   likeButton.addEventListener('click', () => likeCard(likeButton));

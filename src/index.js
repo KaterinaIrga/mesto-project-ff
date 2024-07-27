@@ -9,6 +9,7 @@ const page = document.querySelector('.page');
 const profile = page.querySelector('.profile');
 const placesList = document.querySelector('.places__list');
 const cardTemplate = document.querySelector('#card-template').content;
+let userData;
 
 createPage();
 
@@ -30,50 +31,38 @@ function avatarMouseOut() {
 }
 
 function createProfile(profile, userData) {
-  userData
-  .then(res => {
-    profile.querySelector('.profile__title').textContent = res.name;
-    profile.querySelector('.profile__description').textContent = res.about;
-    profile.querySelector('.profile__image').style = `background-image: url('${res.avatar}')`;
-    profile.querySelector('.profile__image-edit').addEventListener('mouseover', () => {avatarMouseOver()});
-    profile.querySelector('.profile__image-edit').addEventListener('mouseout', () => {avatarMouseOut()});
-    console.log('Профиль успешно создан.');
-    
-  })
-  .catch(() => {
-    console.log('При осоздании профиля что-то пошло не так...');
-  })
-  .finally(() => console.log('createProfile.finally'));
+  profile.querySelector('.profile__title').textContent = userData.name;
+  profile.querySelector('.profile__description').textContent = userData.about;
+  profile.querySelector('.profile__image').style = `background-image: url('${userData.avatar}')`;
+  profile.querySelector('.profile__image-edit').addEventListener('mouseover', () => {avatarMouseOver()});
+  profile.querySelector('.profile__image-edit').addEventListener('mouseout', () => {avatarMouseOut()});
+  console.log('Профиль успешно создан.');
+
 }
 
 function updateProfile(profile, userData) {
-  userData
-    .then(res => {
-      profile.querySelector('.profile__title').textContent = res.name;
-      profile.querySelector('.profile__description').textContent = res.about;
-      profile.querySelector('.profile__image').style = `background-image: url('${res.avatar}')`;
-      console.log('Профиль успешно обновлен.');
-      console.log(res);
-    })
-    .catch(() => {
-      console.log('При обновлении профиля что-то пошло не так...');
-    })
-    .finally(() => console.log('updateProfile.finally'));
+  profile.querySelector('.profile__title').textContent = userData.name;
+  profile.querySelector('.profile__description').textContent = userData.about;
+  profile.querySelector('.profile__image').style = `background-image: url('${userData.avatar}')`;
+  console.log('Профиль успешно обновлен.');
 }
 
-function updateCards(cardsData) {
-  cardsData
-    .then(res => {
-      res.forEach(card => { 
-        placesList.append(createCard(card, deleteCard, likeCard, cardTemplate, openModalImage)); 
-      })
-    })
+function updateCards(cardsData, idUser) {
+  Array.from(cardsData).forEach(card => { 
+    placesList.append(createCard(card, deleteCard, likeCard, cardTemplate, openModalImage, idUser)); 
+  });
 }
 
-function createPage() {  
-  enebleValidation();  
-  createProfile(profile, getUserInfo());
-  updateCards(getCardsData());
+function createPage() {
+  let cardsData = {};
+  
+  getUserInfo().then(res => {userData = res;});
+  getCardsData().then(result => {cardsData = result; })
+  const loadCardPromise = Promise.all([getUserInfo(), getCardsData()]);
+
+  loadCardPromise.then(() => { createProfile(profile, userData);
+                              updateCards(cardsData, userData._id);
+                              enebleValidation(); });  
 }
 
 function openModalProfile() {
@@ -81,8 +70,7 @@ function openModalProfile() {
   const inputName = elem.querySelector('.popup__input_type_name');
   const inputDescription = elem.querySelector('.popup__input_type_description');
   const form = elem.querySelector('.popup__form');
-  clearValidation(form); //очистим значения сообщений об ошибке
-  
+  clearValidation(form); //очистим значения сообщений об ошибке  
   inputName.textContent = '';
   inputDescription.textContent = '';
   inputDescription.placeholder = document.querySelector('.profile__description').textContent;
@@ -105,8 +93,7 @@ function openModalNewCard() {
   inputNewCard.textContent = '';
   inputUrl.textContent = '';
   const form = elem.querySelector('.popup__form');
-  clearValidation(form); //очистим значения сообщений об ошибке
-  
+  clearValidation(form); //очистим значения сообщений об ошибке  
   
   elem.querySelector('.popup__form').addEventListener('submit',  (e) => { 
     saveData(e); closeModal(elem);} );
@@ -139,16 +126,15 @@ function saveData(e) {
     switch (formElem.getAttribute('name')) {
       case 'edit-avatar': {   
         SetUserAvatar(formElem.elements.avatar.value)
-          .then(() => {updateProfile(profile, getUserInfo() )})
+          .then(() => {updateProfile(profile, userData)})
           .catch((err) => {console.log(err)});
           resolve('Сохранить');
           reject(new Error('Где-то произошла ошибка...'));       
         break;
       }
-      case 'edit-profile': {  
-        //ToDo: передавать не getUserInfo(), а сам объект, возвращаемый saveProfileData       
+      case 'edit-profile': {     
         saveProfileData(formElem.elements.name.value, formElem.elements.description.value)
-          .then(() => { updateProfile(profile, getUserInfo())});
+          .then(() => { updateProfile(profile, userData)});
         resolve('Сохранить');
         reject(new Error('Где-то произошла ошибка...'));       
         break;
@@ -160,7 +146,7 @@ function saveData(e) {
         };
         //ToDO:если сервер возвращает id карточки, то здесь нужно переделать на добавление карточки в верстку по id        
         saveNewCardData(newCardData)
-          .then((result) => { placesList.prepend(createCard(result, deleteCard, likeCard, cardTemplate, openModalImage));});
+          .then((result) => { placesList.prepend(createCard(result, deleteCard, likeCard, cardTemplate, openModalImage, userData._id));});
         resolve('Сохранить');
         reject(new Error('Где-то произошла ошибка...'));        
         break;
