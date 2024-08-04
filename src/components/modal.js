@@ -22,8 +22,7 @@ export function closeModalEscape(e) {
 }
 
 export function closeModalOverlay(e){
-  if (e.type === 'submit' ||
-     (e.target.classList.contains('popup') || e.target.classList.contains('popup__close'))) {
+  if (e.target.classList.contains('popup') || e.target.classList.contains('popup__close')) {
     closeModal(e.currentTarget);    
   }
   e.stopPropagation() ;

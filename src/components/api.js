@@ -1,6 +1,11 @@
 const authorization = '95e6fe45-0fdc-4b40-8bb6-4db715dbdfac';
 const baseUrl = 'https://nomoreparties.co/v1/pwff-cohort-1/';
 
+function handleResponse(res) {
+  if (res.ok) 
+    {return res.json();}
+}
+
 export const getUserInfo = function() {
   return fetch(`${baseUrl}users/me`, {
     method: 'GET', 
@@ -8,41 +13,32 @@ export const getUserInfo = function() {
       authorization: authorization
     }
   })
-  .then(res => {if(res.ok) {return res.json();}})
-  .then(result => {return result})
-  .catch((err) => {
-    console.log('Ошибка. Запрос не выполнен getUserInfo.');
-  });
+  .then(handleResponse)
 }
 
 export function switchLikesForCard(idCard, like) {  
-  const fetchMethod = like ? 'PUT' : 'DELETE';
+  const fetchMethod = like ? 'DELETE' : 'PUT';
   return fetch(`${baseUrl}cards/likes/${idCard}`, {
     method: fetchMethod,
     headers: {
       authorization: authorization
     }
   })
-    .then(res => {if(res.ok) {return res.json();}})
-    .then(result => {return result})
+    .then(handleResponse)
 }
 
 export const getCardsData = function() {
+
   return fetch(`${baseUrl}cards`, {
     method: 'GET',
     headers: {
       authorization: authorization 
     }
   })
-  .then(res => {if(res.ok) {return res.json();}})
-  .then(result => {return result})
-  .catch((err) => {
-    console.log('Ошибка. Запрос не выполнен getCardsData.');
-  });
+  .then(handleResponse)
 }
 
-export function SetUserAvatar(url) {
-  
+export function setUserAvatar(avatarLink) {
   return fetch(`${baseUrl}users/me/avatar`, {
     method: 'PATCH',
     headers: {
@@ -50,12 +46,17 @@ export function SetUserAvatar(url) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      avatar: url
+      avatar: avatarLink
     })
   })
-  .then(res => {if(res.ok) {return res.json();}})
-  .then(result => {return result})
-  .catch(err => {console.log(`Ого! Что-то пошло не так: ${err}...`)})
+  .then(handleResponse)
+}
+
+export function checkAvatarLink(avatarLink) {
+  return fetch(avatarLink, {
+    method: 'HEAD'
+  })
+  .then(res => {if (res.ok) {return res.headers.get('content-type')} })
 }
 
 export function getCardData(idCard) {
@@ -65,9 +66,7 @@ export function getCardData(idCard) {
       authorization: authorization 
     }
   })
-  .then(res => {if(res.ok) {return res.json();}})
-  .then(result => {return result})
-  .catch(err => console.log(err))
+  .then(handleResponse)
 }
 
 export function saveNewCardData(CardData) {
@@ -82,8 +81,7 @@ export function saveNewCardData(CardData) {
       link: CardData.link
     })
   })
-  .then(res => {if(res.ok) {return res.json();}})
-  .then(result => {return result})
+  .then(handleResponse)
 }
 
 export function saveProfileData(name, description) {
@@ -98,9 +96,7 @@ export function saveProfileData(name, description) {
       about: description
     })
   })
-  .then(res => {if(res.ok) {return res.json();}})
-  .then(result => { return result;})
-  .catch(err => {console.log(err)})
+  .then(handleResponse)
 }
 
 export function dropCard(idCard) {
@@ -110,7 +106,5 @@ export function dropCard(idCard) {
       authorization: authorization,
     }
   })
-  .then(res => {if(res.ok) {return res.json();}})
-  .then(result => {return result;})
-  .catch(err => {console.log(err);})
+  .then(handleResponse)  
 }

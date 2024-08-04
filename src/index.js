@@ -1,21 +1,25 @@
 import {createCard, deleteCard, likeCard} from './components/card.js';
 import {openModal, closeModal} from './components/modal.js';
-import {clearValidation, enebleValidation} from './components/validation.js';
+import {clearValidation, enableValidation} from './components/validation.js';
+import {validationConfig} from './components/ValidationConfig.js';
 import logoImg from './images/logo.svg';
 import './index.css';
-import {getUserInfo, getCardsData, saveProfileData, saveNewCardData, SetUserAvatar} from './components/api.js';
+import {getUserInfo, getCardsData, checkAvatarLink, saveProfileData, saveNewCardData, setUserAvatar} from './components/api.js';
 
 const page = document.querySelector('.page');
 const profile = page.querySelector('.profile');
 const placesList = document.querySelector('.places__list');
 const cardTemplate = document.querySelector('#card-template').content;
-let userData;
 
+
+//Todo: обернуть вызов в промис и в этом же промисе запрлнить глобавльную переменную с iduser . 
+//сначала все генерим, потом заполняем переменную
 createPage();
 
-const profileButton = page.querySelector('.profile__edit-button');
-const cardAddButton = page.querySelector('.profile__add-button');
-const avatarButton = page.querySelector('.profile__image-edit');
+let popupProfileIsCreated = false;
+let popupAvatarIsCreated = false;
+let popupCardIsCreated = false;
+
 
 document.querySelector('.header__logo').src = logoImg;
 
@@ -31,20 +35,33 @@ function avatarMouseOut() {
 }
 
 function createProfile(profile, userData) {
-  profile.querySelector('.profile__title').textContent = userData.name;
-  profile.querySelector('.profile__description').textContent = userData.about;
-  profile.querySelector('.profile__image').style = `background-image: url('${userData.avatar}')`;
-  profile.querySelector('.profile__image-edit').addEventListener('mouseover', () => {avatarMouseOver()});
-  profile.querySelector('.profile__image-edit').addEventListener('mouseout', () => {avatarMouseOut()});
+  const avatarButton = profile.querySelector('.profile__image-edit');
+  updateProfile(profile, userData);
+  profile.querySelector('.profile__edit-button').addEventListener('click', openModalProfile);
+  avatarButton.addEventListener('click', openModalAvatar);
+  avatarButton.addEventListener('mouseover', () => {avatarMouseOver()});
+  avatarButton.addEventListener('mouseout', () => {avatarMouseOut()});
   console.log('Профиль успешно создан.');
-
 }
 
 function updateProfile(profile, userData) {
   profile.querySelector('.profile__title').textContent = userData.name;
   profile.querySelector('.profile__description').textContent = userData.about;
-  profile.querySelector('.profile__image').style = `background-image: url('${userData.avatar}')`;
-  console.log('Профиль успешно обновлен.');
+  profile.querySelector('.profile__image').style = `background-image: url('${userData.avatar}')`;  
+}
+
+function createCards(cardsData, idUser) {
+  let newCard;
+
+  //ToDo: Сюда иногда приходит пустой объект
+//console.log(cardsData)
+
+
+  Array.from(cardsData).forEach(card => { 
+    newCard = createCard(card, deleteCard, likeCard, cardTemplate, openModalImage, idUser);
+    placesList.append(newCard); 
+  });
+  console.log('Карточки успешно загружены.');
 }
 
 function updateCards(cardsData, idUser) {
@@ -54,49 +71,56 @@ function updateCards(cardsData, idUser) {
 }
 
 function createPage() {
-  let cardsData = {};
-  
-  getUserInfo().then(res => {userData = res;});
-  getCardsData().then(result => {cardsData = result; })
-  const loadCardPromise = Promise.all([getUserInfo(), getCardsData()]);
+  const cardAddButton = page.querySelector('.profile__add-button');
 
-  loadCardPromise.then(() => { createProfile(profile, userData);
-                              updateCards(cardsData, userData._id);
-                              enebleValidation(); });  
+  cardAddButton.addEventListener('click', openModalNewCard);
+
+  //ToDo: Переписать all через массив возвращаемых результатов, а вызовы обоих промисов выше убрать.
+
+
+  Promise.all([getUserInfo(), getCardsData()])
+  .then((result) => {
+                createProfile(profile, result[0]);
+                createCards(result[1], result[0]._id);
+                enableValidation(validationConfig); }) 
+  .catch((err) => {console.log(err)});                       
 }
 
 function openModalProfile() {
-  const elem = openModal(document.querySelector('.popup_type_edit'));
-  const inputName = elem.querySelector('.popup__input_type_name');
-  const inputDescription = elem.querySelector('.popup__input_type_description');
-  const form = elem.querySelector('.popup__form');
-  clearValidation(form); //очистим значения сообщений об ошибке  
-  inputName.textContent = '';
-  inputDescription.textContent = '';
-  inputDescription.placeholder = document.querySelector('.profile__description').textContent;
-  inputName.placeholder = document.querySelector('.profile__title').textContent;
-  form.addEventListener('submit', (e) => {saveData(e); closeModal(elem);});  
+  const elem = openModal(document.querySelector('.popup_type_edit'));  
+  if (!popupProfileIsCreated) {
+    popupProfileIsCreated = true;
+  } else {
+    const inputName = elem.querySelector('.popup__input_type_name');
+    const inputDescription = elem.querySelector('.popup__input_type_description');     
+    clearValidation(elem.querySelector(`.${validationConfig.formSelector}`), validationConfig); //очистим значения сообщений об ошибке  
+    inputName.textContent = '';
+    inputDescription.textContent = '';
+    inputDescription.placeholder = document.querySelector('.profile__description').textContent;
+    inputName.placeholder = document.querySelector('.profile__title').textContent;
+  }  
 }
 
 function openModalAvatar() {
-  const elem = openModal(document.querySelector('.popup_type_avatar'));
-  const inputAvatar = elem.querySelector('.popup__input_type_avatar');
-  const form = elem.querySelector('.popup__form');
-  clearValidation(form); //очистим значения сообщений об ошибке
-  form.addEventListener('submit', (e) => {saveData(e); closeModal(elem);});
+  const elem = openModal(document.querySelector('.popup_type_avatar')); 
+  if (!popupAvatarIsCreated) {
+    popupAvatarIsCreated = true;
+  } else {
+    clearValidation(elem.querySelector(`.${validationConfig.formSelector}`), validationConfig); //очистим значения сообщений об ошибке
+  }  
 }
 
 function openModalNewCard() {
   const elem = openModal(document.querySelector('.popup_type_new-card'));
-  const inputNewCard = elem.querySelector('.popup__input_type_card-name');
-  const inputUrl = elem.querySelector('.popup__input_type_url');
-  inputNewCard.textContent = '';
-  inputUrl.textContent = '';
-  const form = elem.querySelector('.popup__form');
-  clearValidation(form); //очистим значения сообщений об ошибке  
-  
-  elem.querySelector('.popup__form').addEventListener('submit',  (e) => { 
-    saveData(e); closeModal(elem);} );
+  if (!popupCardIsCreated) {
+    popupCardIsCreated = true;
+  } else {
+    const inputNewCard = elem.querySelector('.popup__input_type_card-name');
+    const inputUrl = elem.querySelector('.popup__input_type_url');
+    inputNewCard.textContent = '';
+    inputUrl.textContent = '';  
+    clearValidation(elem.querySelector(`.${validationConfig.formSelector}`), validationConfig); //очистим значения сообщений об ошибке  
+  }  
 }
 
 function openModalImage(e) {
@@ -110,59 +134,73 @@ function openModalImage(e) {
   }  
 }
 
-function changeButtonContent(btn, btnContent) {
+export function changeButtonContent(btn, btnContent) {
   btn.textContent = btnContent;
 }
 
-//ToDo: написать функцию, достающую все поля и элементы управления из формы
-
-function saveData(e) {
-  //ToDo: здесь переделать на использование document.forms.[e.target]
+export function saveData(e) {
+  e.preventDefault();
   const formElem = e.target;
-  const saveButton = formElem.querySelector('.popup__button');
 
-  changeButtonContent(saveButton, 'Сохранение...');
-  const savePromise = new Promise((resolve, reject) => {
+  changeButtonContent(formElem.querySelector(`.${validationConfig.submitButtonSelector}`), 'Сохранение...');
+  const promiseSave = new Promise((resolve, reject) => {
     switch (formElem.getAttribute('name')) {
-      case 'edit-avatar': {   
-        SetUserAvatar(formElem.elements.avatar.value)
-          .then(() => {updateProfile(profile, userData)})
-          .catch((err) => {console.log(err)});
-          resolve('Сохранить');
-          reject(new Error('Где-то произошла ошибка...'));       
+      case 'edit-avatar': {
+        Promise.all([ checkAvatarLink(formElem.elements.avatar.value), setUserAvatar(formElem.elements.avatar.value) ])
+          .then((result) => {
+                              updateProfile(profile, result[1]);
+                              resolve('Сохранить');
+                            }) 
+          .catch((err) => {console.log('setUserAvatar, checkAvatarLink error', err); 
+                            reject(new Error('Где-то произошла ошибка...'));});
+                    
         break;
       }
-      case 'edit-profile': {     
+      case 'edit-profile': {
         saveProfileData(formElem.elements.name.value, formElem.elements.description.value)
-          .then(() => { updateProfile(profile, userData)});
-        resolve('Сохранить');
-        reject(new Error('Где-то произошла ошибка...'));       
+          .then((result) => {updateProfile(profile, result);
+                             closeModal(formElem.closest(`.${validationConfig.popupSelector}`));
+                              resolve('Сохранить');
+          })
+          .catch(err => {console.log('saveProfileData error', err); reject(new Error('Где-то произошла ошибка...'));});
+          
         break;
       }
       case 'new-place': {
         const newCardData = {
           name:formElem.elements['place-name'].value,
           link: formElem.elements.link.value
-        };
-        //ToDO:если сервер возвращает id карточки, то здесь нужно переделать на добавление карточки в верстку по id        
+        };     
         saveNewCardData(newCardData)
-          .then((result) => { placesList.prepend(createCard(result, deleteCard, likeCard, cardTemplate, openModalImage, userData._id));});
-        resolve('Сохранить');
-        reject(new Error('Где-то произошла ошибка...'));        
+          .then((result) => {
+                              placesList.prepend(createCard(
+                                                            result, 
+                                                            deleteCard, 
+                                                            likeCard, 
+                                                            cardTemplate, 
+                                                            openModalImage, 
+                                                            result.owner._id
+                                                          ));
+                              closeModal(formElem.closest(`.${validationConfig.popupSelector}`));
+                              resolve('Сохранить');
+                            })
+          .catch((err) => {console.log(err); reject(new Error('Где-то произошла ошибка...'));});
+   
         break;
       }
       default: {
-      e.stopPropagation();
-      //showButtonIsLoad()
-      }
-    }   
-  });
-
-  savePromise
-    .then((result) => {changeButtonContent(saveButton, result);})
-    .catch((err) => {changeButtonContent(saveButton, err.message);})
+        e.stopPropagation();
+        }
+  }});
+  promiseSave
+    .then(() => {
+      console.log('Данные успешно сохранены.');      
+    })
+    .finally(() => { changeButtonContent(formElem.querySelector(`.${validationConfig.submitButtonSelector}`), 'Сохранить'); })
+    .then(() => { closeModal(formElem.closest(`.${validationConfig.popupSelector}`)); })
+    .catch(err => {console.log(err)})
+    
 }
 
-profileButton.addEventListener('click', openModalProfile);
-cardAddButton.addEventListener('click', openModalNewCard);
-avatarButton.addEventListener('click', openModalAvatar);
+
+

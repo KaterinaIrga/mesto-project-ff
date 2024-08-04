@@ -1,10 +1,10 @@
 .popup__input-error {
-  display:none;
+ /*  visibility: hidden; */
   color: red;
   font-size: 12px;
   margin: 5px 0 10px;
 }
 
 .popup__input:invalid + .popup__input-error {
-  display: block;
+  visibility:visible;
 }

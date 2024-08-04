@@ -1,41 +1,45 @@
-const emptyNameError = 'data-empty-error';
+import {saveData, saveTest, changeButtonContent} from '../index.js';
+import {closeModal} from './modal.js';
 const contentNameError = 'data-content-error';
-const typeValueError = 'data-type-error';
-const validationConfig = {
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: '.popup__button_inactive',
-  inputErrorClass: '.popup__input-border-error',
-  errorClass: '.popup__input-error'
-};
 
-function setEventListeners(formElement) {
-  Array.from(formElement.querySelectorAll(validationConfig.inputSelector))
+function setEventListeners(formElement, config) {
+  formElement.querySelectorAll(`.${config.inputSelector}`)
     .forEach(input => {
-      input.addEventListener('blur', (e)=> {isValid(input); toggleButtonState(formElement)});
-      input.addEventListener('change', () => {isValid(input); toggleButtonState(formElement)});
-      input.addEventListener('input', () => {
-        isValid(input); toggleButtonState(formElement)});      
+      input.addEventListener('blur', (e)=> {
+                                              isValid(formElement, input, config); 
+                                              toggleButtonState(formElement, config)
+                                            });
+      input.addEventListener('change', () => {
+                                                isValid(formElement, input, config); 
+                                                toggleButtonState(formElement, config)
+                                              });
+      input.addEventListener('input', () => { 
+                                              isValid(formElement, input, config); 
+                                              toggleButtonState(formElement, config)
+                                            });      
      }
   )
+  formElement.addEventListener('submit',  saveData);
 }
 
-export function toggleButtonState(formElem) {
-  const buttonElem = formElem.querySelector(validationConfig.submitButtonSelector);
+
+export function toggleButtonState(formElem, config) {
+  const buttonElem = formElem.querySelector(`.${config.submitButtonSelector}`);
 
   if (hasInvalidInput(formElem)) {
     buttonElem.disabled = true;
-    buttonElem.classList.add(validationConfig.inactiveButtonClass.slice(1));
+    buttonElem.classList.add(config.inactiveButtonClass);
   } else {
     buttonElem.disabled = false;
-    buttonElem.classList.remove(validationConfig.inactiveButtonClass.slice(1));
+    buttonElem.classList.remove(config.inactiveButtonClass);
   };
 }
 
-export function enebleValidation() {
-  const formList = Array.from(document.forms);
-  formList.forEach(form => {setEventListeners(form);
+export function enableValidation(config) {
+  const formList = document.querySelectorAll(`.${config.formSelector}`);
+  formList.forEach(form => {
+                              setEventListeners(form, config);
+                              toggleButtonState(form, config);
   });  
 }
 
@@ -43,55 +47,43 @@ function hasInvalidInput(formElement) {
   return Array.from(formElement.elements).some(input => {return !input.validity.valid});
 }
 
-export function clearValidation (formForValidation, Config = validationConfig ) {  
-  Array.from(formForValidation.querySelectorAll(Config.errorClass)).forEach(item => {
-    hideInputError(formForValidation, item);
-    item.textContent = ''; 
-  });
-
-  Array.from(formForValidation.querySelectorAll(Config.inputErrorClass))
-    .forEach(item => {item.classList.remove(Config.inputErrorClass.slice(1))});  
-  toggleButtonState(formForValidation);
+export function clearValidation (formForValidation, config ) {  
+  formForValidation.querySelectorAll(`.${config.inputErrorClass}`)
+  .forEach(item => {
+    item.classList.remove(config.inputErrorClass);
+    hideInputError(formForValidation, item, config);
+    toggleButtonState(formForValidation, config);
+  });     
 }
 
-function isValid(inputElement){
+function isValid(formForValidation, inputElement, config){
   if(inputElement.validity.valid) {
-    hideInputError(inputElement);
+    hideInputError(formForValidation, inputElement, config);
   } else {
-    showInputError(inputElement);
+    const errorMessage = inputElement.validity.patternMismatch 
+                         ? inputElement.getAttribute(contentNameError) 
+                         : inputElement.validationMessage;
+    showInputError(formForValidation, inputElement, errorMessage, config); 
   }
 }
 
 //делаем элемент ошибки видимым, текст ошибки из дата-атрибута устанавливаем в элемент сообщения об ошибке
-function showInputError(inputElement) {
+function showInputError(formForValidation, inputElement, errorMessage, config) {
+  let i =1;
+  console.log(`showInputError ${i++}`)
+
   const errorElement = document.getElementById(`popup__input-${inputElement.getAttribute('name')}-error`); 
-  if (inputElement.value === '') {
-    const errorName = emptyNameError;
-    errorElement.textContent =  inputElement.getAttribute(errorName) ;
-    errorElement.classList.add(validationConfig.inputErrorClass.slice(1));
-    inputElement.classList.add(validationConfig.errorClass.slice(1));
-  } else if (inputElement.validity.typeMismatch) {
-    const errorName = typeValueError;
-    errorElement.textContent =  inputElement.getAttribute(errorName) ;
-    errorElement.classList.add(validationConfig.inputErrorClass.slice(1));
-    inputElement.classList.add(validationConfig.errorClass.slice(1));
-  } else if (inputElement.validity.patternMismatch) {
-    const errorName = contentNameError;
-    errorElement.textContent = inputElement.getAttribute(errorName) ;
-    errorElement.classList.add(validationConfig.inputErrorClass.slice(1));
-    inputElement.classList.add(validationConfig.errorClass.slice(1));
-  } else if (inputElement.validity.tooLong || inputElement.validity.tooShort) {    
-    errorElement.textContent =inputElement.getAttribute('data-long-short-error');
-    errorElement.classList.add(validationConfig.inputErrorClass.slice(1));
-    inputElement.classList.add(validationConfig.errorClass.slice(1));
-  }  
+
+  errorElement.textContent = errorMessage;
+  inputElement.classList.add(config.inputErrorClass);
+  
 }
 
-function hideInputError(inputElement) {
+function hideInputError(formForValidation, inputElement, config) {
   const errorElement = document.getElementById(`popup__input-${inputElement.getAttribute('name')}-error`);
   if (errorElement) {    
     errorElement.textContent = '';
-    errorElement.classList.remove(validationConfig.inputErrorClass.slice(1));
+    
   }  
-  inputElement.classList.remove(validationConfig.errorClass.slice(1));
+  inputElement.classList.remove(config.inputErrorClass);
 }

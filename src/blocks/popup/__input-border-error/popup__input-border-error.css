@@ -1,8 +1,0 @@
-.popup__input-border-error {
-  display:none;
-  border-bottom: 1px solid red;
-}
-
-.popup__input-border-error:invalid {
-  display: block;
-}
