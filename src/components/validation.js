@@ -1,5 +1,3 @@
-import {saveData, saveTest, changeButtonContent} from '../index.js';
-import {closeModal} from './modal.js';
 const contentNameError = 'data-content-error';
 
 function setEventListeners(formElement, config) {
@@ -19,9 +17,8 @@ function setEventListeners(formElement, config) {
                                             });      
      }
   )
-  formElement.addEventListener('submit',  saveData);
+  
 }
-
 
 export function toggleButtonState(formElem, config) {
   const buttonElem = formElem.querySelector(`.${config.submitButtonSelector}`);
@@ -69,9 +66,6 @@ function isValid(formForValidation, inputElement, config){
 
 //делаем элемент ошибки видимым, текст ошибки из дата-атрибута устанавливаем в элемент сообщения об ошибке
 function showInputError(formForValidation, inputElement, errorMessage, config) {
-  let i =1;
-  console.log(`showInputError ${i++}`)
-
   const errorElement = document.getElementById(`popup__input-${inputElement.getAttribute('name')}-error`); 
 
   errorElement.textContent = errorMessage;
@@ -82,8 +76,7 @@ function showInputError(formForValidation, inputElement, errorMessage, config) {
 function hideInputError(formForValidation, inputElement, config) {
   const errorElement = document.getElementById(`popup__input-${inputElement.getAttribute('name')}-error`);
   if (errorElement) {    
-    errorElement.textContent = '';
-    
+    errorElement.textContent = '';    
   }  
   inputElement.classList.remove(config.inputErrorClass);
 }

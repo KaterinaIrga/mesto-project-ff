@@ -80,20 +80,23 @@ function createPage() {
 
   Promise.all([getUserInfo(), getCardsData()])
   .then((result) => {
-                createProfile(profile, result[0]);
-                createCards(result[1], result[0]._id);
-                enableValidation(validationConfig); }) 
+                      createProfile(profile, result[0]);
+                      createCards(result[1], result[0]._id);
+                      enableValidation(validationConfig); 
+                    }) 
   .catch((err) => {console.log(err)});                       
 }
 
 function openModalProfile() {
-  const elem = openModal(document.querySelector('.popup_type_edit'));  
+  const elem = openModal(document.querySelector('.popup_type_edit')); 
+  const formElement = elem.querySelector(`.${validationConfig.formSelector}`);
   if (!popupProfileIsCreated) {
     popupProfileIsCreated = true;
+    formElement.addEventListener('submit',  saveData);
   } else {
     const inputName = elem.querySelector('.popup__input_type_name');
-    const inputDescription = elem.querySelector('.popup__input_type_description');     
-    clearValidation(elem.querySelector(`.${validationConfig.formSelector}`), validationConfig); //очистим значения сообщений об ошибке  
+    const inputDescription = elem.querySelector('.popup__input_type_description');  
+    clearValidation(formElement, validationConfig); //очистим значения сообщений об ошибке  
     inputName.textContent = '';
     inputDescription.textContent = '';
     inputDescription.placeholder = document.querySelector('.profile__description').textContent;
@@ -103,23 +106,27 @@ function openModalProfile() {
 
 function openModalAvatar() {
   const elem = openModal(document.querySelector('.popup_type_avatar')); 
+  const formElement = elem.querySelector(`.${validationConfig.formSelector}`);
   if (!popupAvatarIsCreated) {
     popupAvatarIsCreated = true;
+    formElement.addEventListener('submit',  saveData);
   } else {
-    clearValidation(elem.querySelector(`.${validationConfig.formSelector}`), validationConfig); //очистим значения сообщений об ошибке
+    clearValidation(formElement, validationConfig); //очистим значения сообщений об ошибке
   }  
 }
 
 function openModalNewCard() {
   const elem = openModal(document.querySelector('.popup_type_new-card'));
+  const formElement = elem.querySelector(`.${validationConfig.formSelector}`);
   if (!popupCardIsCreated) {
     popupCardIsCreated = true;
+    formElement.addEventListener('submit',  saveData);
   } else {
     const inputNewCard = elem.querySelector('.popup__input_type_card-name');
     const inputUrl = elem.querySelector('.popup__input_type_url');
     inputNewCard.textContent = '';
     inputUrl.textContent = '';  
-    clearValidation(elem.querySelector(`.${validationConfig.formSelector}`), validationConfig); //очистим значения сообщений об ошибке  
+    clearValidation(formElement, validationConfig); //очистим значения сообщений об ошибке  
   }  
 }
 

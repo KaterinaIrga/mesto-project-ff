@@ -34,7 +34,8 @@ export function createCard(cardData, delCard, likeCard, cardTemplate, imageClick
 export function deleteCard (btn) {  
   const delItem = btn.closest('.card');
   dropCard(delItem.getAttribute('id'))
-    .then(() => {delItem.remove();});    
+    .then(() => {delItem.remove();}) 
+    .catch((err) => {console.log(err)});   
 }
 
 function hasMyLike(likeArray, idUser) {
@@ -54,7 +55,5 @@ export function likeCard(elem) {
     })
     .catch((err) => {console.log('Что-то пошло не так при лайке.');
       console.log(err);
-    })
-    .finally(() => {return likeCount.textContent;})
-  
-}
+    });   
+  }
